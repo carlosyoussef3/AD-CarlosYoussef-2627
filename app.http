@@ -1,0 +1,122 @@
+@host = http://localhost:5008
+@token = {{login.response.body.token}}
+
+### 1. LOGIN (altijd eerst deze sturen!)
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "demo",
+  "password": "demo123"
+}
+
+### 2. BUSINESSREGEL: uren op "Oude webshop" (Closed) -> 409 Conflict
+POST {{host}}/timeentries
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "projectId": 3,
+  "description": "Nog een bugfix",
+  "hours": 1,
+  "date": "2026-11-23"
+}
+
+### 3. uren boeken op actief project -> 201 Created
+POST {{host}}/timeentries
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "projectId": 1,
+  "description": "Testen van de homepage",
+  "hours": 2.5,
+  "date": "2026-11-23"
+}
+
+### 4. project bestaat niet -> 400
+POST {{host}}/timeentries
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "projectId": 999,
+  "description": "Iets",
+  "hours": 1,
+  "date": "2026-11-23"
+}
+
+### 5. ongeldige invoer (0 uren, lege omschrijving) -> 400
+POST {{host}}/timeentries
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "projectId": 1,
+  "description": "",
+  "hours": 0,
+  "date": "2026-11-23"
+}
+
+### 6. alle projecten (geen login nodig) -> 200
+GET {{host}}/projects
+
+### 7. één project met zijn uren -> 200
+GET {{host}}/projects/1
+
+### 8. project bestaat niet -> 404
+GET {{host}}/projects/999
+
+### 9. nieuw project ZONDER token -> 401
+POST {{host}}/projects
+Content-Type: application/json
+
+{
+  "name": "Mobiele app",
+  "client": "Acme NV"
+}
+
+### 10. nieuw project MET token -> 201 (status automatisch Active)
+POST {{host}}/projects
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Mobiele app",
+  "client": "Acme NV"
+}
+
+### 11. project afsluiten -> 204
+PUT {{host}}/projects/4
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Mobiele app",
+  "client": "Acme NV",
+  "status": "Closed"
+}
+
+### 12. project verwijderen -> 204
+DELETE {{host}}/projects/4
+Authorization: Bearer {{token}}
+
+### 13. alle urenregistraties -> 200
+GET {{host}}/timeentries
+
+### 14. urenregistraties van project 1 -> 200
+GET {{host}}/timeentries?projectId=1
+
+### 15. registratie verwijderen -> 204
+DELETE {{host}}/timeentries/4
+Authorization: Bearer {{token}}
+
+### 16. nieuwe gebruiker registreren -> 200 (of 409 als hij al bestaat)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "carlos",
+  "password": "geheim123"
+}

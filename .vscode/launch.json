@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "TimesheetApi (https)",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/TimesheetApi.csproj",
+      "launchConfigurationId": "TargetFramework=;https"
+    }
+  ]
+}
